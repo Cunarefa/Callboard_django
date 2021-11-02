@@ -29,7 +29,7 @@ class LikesSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = UserListSerializer(read_only=True)
+    author = serializers.PrimaryKeyRelatedField(read_only=True)
     likes = LikesSerializer(read_only=True, many=True)
 
     class Meta:
