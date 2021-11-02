@@ -1,12 +1,10 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
 
-from dashboard_app.models import User
+from dashboard_app.models import User, Post
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'password')
@@ -17,20 +15,26 @@ class UserSerializer(serializers.ModelSerializer):
     )
 
 
-class RefreshTokenSerializer(serializers.Serializer):
-    refresh = serializers.CharField()
+class UserListSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
 
-    default_error_messages = {
-        'bad_token': 'Token is invalid or expired'
-    }
+    class Meta:
+        model = User
+        fields = ('id', 'email',)
 
-    def validate(self, attrs):
-        self.token = attrs['refresh']
-        return attrs
 
-    def save(self, **kwargs):
-        try:
-            RefreshToken(self.token).blacklist()
-        except TokenError:
-            self.fail('bad_token')
+class LikesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+
+
+class PostSerializer(serializers.ModelSerializer):
+    author = UserListSerializer(read_only=True)
+    likes = LikesSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Post
+        fields = '__all__'
+
+
 
