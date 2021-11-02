@@ -9,17 +9,17 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from dashboard_app.models import User
-from dashboard_app.serializers import UserSerializer, RefreshTokenSerializer
+from dashboard_app.serializers import UserRegistrationSerializer
 
 
 class UserRegistrationView(CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
-    serializer_class = UserSerializer
+    serializer_class = UserRegistrationSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             user = User(email=serializer.validated_data['email'])
             user.set_password(serializer.validated_data['password'])
             user.save()
@@ -27,7 +27,8 @@ class UserRegistrationView(CreateAPIView):
 
             return Response({
                 'user': user.email,
-                'token': str(refresh.access_token),
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
                 'status': status.HTTP_201_CREATED
             })
         else:
@@ -49,7 +50,19 @@ class LoginView(APIView):
         token = RefreshToken.for_user(user)
         update_last_login(None, user)
 
-        return Response({'user': user.email, 'token': str(token.access_token)})
+        return Response({'user': user.email, 'access': str(token.access_token), 'refresh': str(token)})
 
 
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response("Successful Logout", status=status.HTTP_200_OK)
+        except Exception as err:
+            return Response(err, status=status.HTTP_400_BAD_REQUEST)
