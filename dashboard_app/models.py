@@ -6,11 +6,13 @@ from django.db import models
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, email, password, **extra_fields):
+    def _create_user(self, email, password, is_staff=None, is_admin=None, **extra_fields):
         if not email:
             raise ValueError('The given email must be set')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
+        user.is_staff = is_staff
+        user.is_admin = is_admin
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -21,11 +23,13 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self._create_user(email, password, **extra_fields)
+        return self._create_user(email, password, is_staff=True, is_admin=True, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, max_length=255)
+    is_staff = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -43,7 +47,7 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     type = models.CharField(max_length=128, blank=True, null=True)
     priority = models.CharField(max_length=255, blank=True, null=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     likes = models.ManyToManyField(User, related_name='liked_posts')
 
     def __str__(self):
@@ -58,11 +62,14 @@ class Comment(models.Model):
     content = models.TextField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
 
     def __str__(self):
         return self.id
+
+    class Meta:
+        ordering = ['created_at']
 
 
 
