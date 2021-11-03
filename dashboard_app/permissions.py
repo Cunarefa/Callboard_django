@@ -1,13 +1,25 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
-from dashboard_app.models import User
-
 
 class IsAuthorOrReadOnly(BasePermission):
     def has_permission(self, request, view):
-        return request.user == User.objects.get(pk=view.request.user.id)
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user == view.request.user
 
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
         return obj.author == request.user
+
+
+class IsUserOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user and request.user.is_authenticated
+        )
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.id == request.user
