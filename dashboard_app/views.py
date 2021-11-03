@@ -1,43 +1,41 @@
 from rest_framework import viewsets, status
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import ListCreateAPIView
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from dashboard_app.models import User, Post
-from dashboard_app.permissions import IsAuthorOrReadOnly
-from dashboard_app.serializers import UserListSerializer, PostSerializer
+from dashboard_app.models import User, Post, Comment
+from dashboard_app.permissions import IsAuthorOrReadOnly, IsUserOrReadOnly
+from dashboard_app.serializers import UserListSerializer, PostSerializer, CommentSerializer, LikeSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserListSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser | IsUserOrReadOnly]
     authentication_classes = [JWTAuthentication]
 
-    def update(self, request, *args, **kwargs):
+    def partial_update(self, request, partial=True, *args, **kwargs):
+        self.get_object()
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return {'new data': serializer.validated_data}
+            User.objects.filter(id=kwargs['pk']).update(**serializer.validated_data)
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
+    permission_classes = [IsAuthorOrReadOnly]
     authentication_classes = [JWTAuthentication]
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save(author_id=request.user.id)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
-    def partial_update(self, request, *args, **kwargs):
-        kwargs['partial'] = True
+    def partial_update(self, request, partial=True, *args, **kwargs):
         self.get_object()
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -45,6 +43,43 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthorOrReadOnly]
+    authentication_classes = [JWTAuthentication]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, post_id=self.request.data['post_id'])
+
+
+class LikeView(APIView):
+    authentication_classes = [JWTAuthentication]
+    serializer_class = [LikeSerializer]
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        post = Post.objects.filter(id=request.data['post_id']).first()
+
+        post.likes.add(user)
+        post.save()
+        return Response('Like!')
+
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        post = Post.objects.filter(id=request.data['post_id']).first()
+        post.likes.remove(user)
+        post.save()
+        return Response('Unliked!')
+
+
+
+
+
+
+
 
 
 
