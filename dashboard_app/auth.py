@@ -50,7 +50,7 @@ class LoginView(APIView):
         token = RefreshToken.for_user(user)
         update_last_login(None, user)
 
-        return Response({'user': user.email, 'access': str(token.access_token), 'refresh': str(token)})
+        return Response({'id': user.id, 'user': user.email, 'access': str(token.access_token), 'refresh': str(token)})
 
 
 class LogoutView(APIView):
