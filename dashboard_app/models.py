@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
+from django.urls import reverse
 
 
 class UserManager(BaseUserManager):
@@ -71,6 +72,9 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.id
+
+    def get_absolute_url(self):
+        return reverse('posts', kwargs={'post_id': self.pk})
 
     class Meta:
         ordering = ['created_at']

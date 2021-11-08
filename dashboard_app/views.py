@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -14,6 +15,12 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserListSerializer
     permission_classes = [IsAdminUser | IsUserOrReadOnly]
     authentication_classes = [JWTAuthentication]
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'profile_list.html'
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.queryset
+        return Response({'users': queryset})
 
     def partial_update(self, request, partial=True, *args, **kwargs):
         self.get_object()
@@ -30,6 +37,12 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     permission_classes = [IsAuthorOrReadOnly]
     authentication_classes = [JWTAuthentication]
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'dashboard_app/index.html'
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.queryset
+        return Response({'posts': queryset})
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
