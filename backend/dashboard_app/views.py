@@ -1,6 +1,5 @@
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -13,23 +12,8 @@ from dashboard_app.serializers import UserListSerializer, PostSerializer, Commen
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserListSerializer
-    permission_classes = [IsAdminUser | IsUserOrReadOnly]
+    permission_classes = [IsUserOrReadOnly]
     authentication_classes = [JWTAuthentication]
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'profile_list.html'
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.queryset
-        return Response({'users': queryset})
-
-    def partial_update(self, request, partial=True, *args, **kwargs):
-        self.get_object()
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            User.objects.filter(id=kwargs['pk']).update(**serializer.validated_data)
-            return Response(serializer.data, status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -37,24 +21,9 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     permission_classes = [IsAuthorOrReadOnly]
     authentication_classes = [JWTAuthentication]
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'dashboard_app/index.html'
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.queryset
-        return Response({'posts': queryset})
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    def partial_update(self, request, partial=True, *args, **kwargs):
-        self.get_object()
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            Post.objects.filter(id=kwargs['pk']).update(**serializer.validated_data)
-            return Response(serializer.data, status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -103,19 +72,4 @@ class LikeView(APIView):
 class RepliesViewSet(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

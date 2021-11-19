@@ -1,4 +1,3 @@
-.env
 /env
 __pycache__/
 *.pyc
@@ -119,3 +118,36 @@ GitHub.sublime-settings
 !.vscode/launch.json
 !.vscode/extensions.json
 .history
+/node_modules/
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### OSX ###
+.AppleDouble
+.LSOverride
+
+# project files should be checked into the repository, unless a significant
+# proportion of contributors will probably not be using SublimeText
+# *.sublime-project
+
+# Basics
+__pycache__
+
+
+# Vim
+*~
+*.swp
+*.swo
+
+# Compass
+.sass-cache
+
+# virtual environments
+env
+
+# User-uploaded media
+staticfiles/
+.cache/

@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework import routers
 
-from dashboard_app.views import UserViewSet, PostViewSet, CommentViewSet, LikeView, RepliesViewSet
+from .views import UserViewSet, PostViewSet, CommentViewSet, LikeView, RepliesViewSet
 
 router = routers.DefaultRouter()
 router.register('users', UserViewSet, basename='users')

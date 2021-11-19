@@ -7,7 +7,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'posts', 'comments', 'liked_posts',)
+        fields = ('id', 'email')
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -19,6 +19,8 @@ class LikeSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(read_only=True, source='author.id')
     comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    likes = LikeSerializer(many=True, read_only=True)
+    my_absolute_url = serializers.URLField(source='get_absolute_url', read_only=True)
 
     class Meta:
         model = Post
@@ -40,6 +42,9 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'content', 'author', 'replies', 'post', 'parent')
+
+
+
 
 
 

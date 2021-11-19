@@ -1,22 +1,19 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import update_last_login
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 
-# from authentication.models import User
-from .serializers import UserRegistrationSerializer, LoginSerializer
+from .serializers import UserRegistrationSerializer
 
 User = get_user_model()
 
 
-class UserRegistrationView(CreateAPIView):
+class UserRegistrationView(viewsets.ModelViewSet):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = UserRegistrationSerializer
@@ -37,13 +34,6 @@ class UserRegistrationView(CreateAPIView):
 
 
 class LoginView(APIView):
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'auth/login.html'
-
-    def get(self, request):
-        serializer = LoginSerializer()
-        return Response({'serializer': serializer})
-
     def post(self, request):
         email = request.data['email']
         password = request.data['password']
