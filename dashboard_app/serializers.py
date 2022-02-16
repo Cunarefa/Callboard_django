@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from dashboard_app.models import User, Post, Comment
+from .models import User, Post, Comment
 
 
 class UserListSerializer(serializers.ModelSerializer):

@@ -151,3 +151,14 @@ env
 # User-uploaded media
 staticfiles/
 .cache/
+
+
+/dist/
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

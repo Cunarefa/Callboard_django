@@ -1,7 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.urls import reverse
 
 
 class UserManager(BaseUserManager):
@@ -49,6 +48,8 @@ class Post(models.Model):
     type = models.CharField(max_length=128, blank=True, null=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     likes = models.ManyToManyField(User, related_name='liked_posts')
+    tag = models.CharField(max_length=32, default='Story')
+    editor = models.CharField(max_length=255, default='None')
 
     class Meta:
         ordering = ['id']

@@ -4,9 +4,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from dashboard_app.models import User, Post, Comment
-from dashboard_app.permissions import IsAuthorOrReadOnly, IsUserOrReadOnly
-from dashboard_app.serializers import UserListSerializer, PostSerializer, CommentSerializer
+from .models import User, Post, Comment
+from .permissions import IsAuthorOrReadOnly, IsUserOrReadOnly
+from .serializers import UserListSerializer, PostSerializer, CommentSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
