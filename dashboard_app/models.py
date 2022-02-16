@@ -49,7 +49,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     likes = models.ManyToManyField(User, related_name='liked_posts')
     tag = models.CharField(max_length=32, default='Story')
-    editor = models.CharField(max_length=255, default='None')
+    editor = models.CharField(max_length=255, default='True')
 
     class Meta:
         ordering = ['id']

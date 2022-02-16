@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='post',
             name='editor',
-            field=models.CharField(default='None', max_length=255),
+            field=models.CharField(default='True', max_length=255),
         ),
     ]
